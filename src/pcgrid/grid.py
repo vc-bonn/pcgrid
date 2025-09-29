@@ -34,10 +34,10 @@ class MultiresolutionGrid(torch.nn.Module):
             if verbose:
                 print("Grid {}".format(arg))
 
-            if self.grid_args["T_lambda_dampening"] > 0:
-                self.grids.append(Grid_level(grid_args=arg))
-            else:
+            if self.grid_args["T_lambda_dampening"] == 0:
                 self.grids.append(Split_Grid_Level(grid_args=arg))
+            else:
+                self.grids.append(Grid_level(grid_args=arg))
         self.zero_grad()
 
     def zero_grad(self):
@@ -94,7 +94,13 @@ class Split_Grid_Level(torch.nn.Module):
             # if grid_idx == 0:
             #     d = {"points": data["points"].detach(), "grid_index": 0}
             # else:
-            d = {"points": data["points"], "grid_index": 0}
+            if data["grid_index"].shape[0] == data["points"].shape[0]:
+                d = {
+                    "points": data["points"][data["grid_index"] == grid_idx],
+                    "grid_index": 0,
+                }
+            else:
+                d = {"points": data["points"], "grid_index": 0}
 
             values.append(self.grids[grid_idx](d))
         return torch.cat(values, dim=0)
@@ -118,7 +124,9 @@ class Grid_level(torch.nn.Module):
             device=self.device,
         ).flatten(start_dim=0, end_dim=-2)
 
-        if self.grid_size > 1 or self.T > 1:
+        if self.grid_size > 1 or (
+            self.T > 1 and self.grid_args["T_lambda_dampening"] > 0
+        ):
             self.precondition()
             self.opt_values = to_differential(self.M, opt_parameters)
         else:
@@ -160,7 +168,7 @@ class Grid_level(torch.nn.Module):
         if self.grid_size > 1:
             adjacencies_space = self.define_neighbourhood_space()
             L_space = self.laplacian_uniform_points(adjacencies_space)
-        if self.T > 1:
+        if self.T > 1 and self.grid_args["T_lambda_dampening"] > 0:
             adjacencies_time = self.define_neighbourhood_time()
             L_time = self.laplacian_uniform_points(adjacencies_time)
 
@@ -191,7 +199,7 @@ class Grid_level(torch.nn.Module):
             )
 
         if L_time is not None and L_space is not None:
-            self.M += L_time * self.smoothness
+            self.M += L_time * self.smoothness * self.grid_args["T_lambda_dampening"]
         self.M = self.M.coalesce()
 
     def laplacian_uniform_points(self, adjacencies: torch.Tensor) -> torch.Tensor:
@@ -361,7 +369,7 @@ class Grid_level(torch.nn.Module):
 
     def zero_grad(self):
         self.opt_values.grad = None
-        self.optimizer.zero_grad()
+        # self.optimizer.zero_grad()
 
     def step(self):
         self.optimizer.step()

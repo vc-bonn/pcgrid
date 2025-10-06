@@ -86,9 +86,6 @@ class ValueWrapper(torch.nn.Module):
         assert (
             data["points"].min() >= -1 and data["points"].max() <= 1
         ), "Points must be in the range [-1, 1]."
-        # assert (
-        #     data["grid_index"].shape[0] == data["points"].shape[0]
-        # ), "Grid index and points must have the same batch size."
         return reduce(lambda a, b: a | b, [wrapper(data) for wrapper in self.wrappers])
 
 
@@ -145,6 +142,8 @@ class SupportWrapper(torch.nn.Module):
             return Opacity(parameter_args)
         elif key == "Scales":
             return Scales(parameter_args)
+        elif key == "Network":
+            return Network(parameter_args)
         else:
             raise ValueError(f"Unsupported value type: {key}")
 

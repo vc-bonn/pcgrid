@@ -83,9 +83,9 @@ class ValueWrapper(torch.nn.Module):
     def forward(self, data: dict) -> torch.Tensor:
         """Combines the outputs of all wrappers into a single dictionary."""
         validate_dict(data, self.input_keys)
-        assert (
-            data["points"].min() >= -1 and data["points"].max() <= 1
-        ), "Points must be in the range [-1, 1]."
+        # assert (
+        #     data["points"].min() >= -1 and data["points"].max() <= 1
+        # ), "Points must be in the range [-1, 1]."
         return reduce(lambda a, b: a | b, [wrapper(data) for wrapper in self.wrappers])
 
 

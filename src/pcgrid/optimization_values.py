@@ -60,7 +60,7 @@ class Rotation(Value):
 
     def __init__(self, args: dict):
         super().__init__(args)
-        if self.args["method"] not in ["cayley", "default"]:
+        if self.args["method"] not in ["cayley", "default", "direct"]:
             raise ValueError(f"Unsupported rotation method: {self.args['method']}")
         if self.args["method"] == "default":
             self.rotation = torch.eye(4, device=self.device, dtype=torch.float32)[
@@ -88,6 +88,8 @@ class Rotation(Value):
             return self.cayley(values)
         elif self.args["method"] == "default":
             return self.rotation.repeat(values.shape[0], values.shape[1], 1, 1)
+        elif self.args["method"] == "direct":
+            return values
 
 
 class Opacity(Value):
@@ -130,3 +132,23 @@ class Scales(Value):
             return values  # Directly use the provided values
         else:
             raise ValueError(f"Unsupported scale method: {self.args['method']}")
+
+
+class Network(Value):
+    """A wrapper for a small MLP network that takes the output of the Grid as Input"""
+
+    def __init__(self, args: dict):
+        super().__init__(args)
+        if self.args["method"] not in ["direct", "sigmoid", "tanh"]:
+            raise ValueError(f"Unsupported network method: {self.args['method']}")
+
+    def forward(self, values) -> torch.Tensor:
+        """Forward pass to create network values."""
+        if self.args["method"] == "direct":
+            return values
+        elif self.args["method"] == "sigmoid":
+            return torch.sigmoid(values)
+        elif self.args["method"] == "tanh":
+            return torch.tanh(values)
+        else:
+            raise ValueError(f"Unsupported network method: {self.args['method']}")

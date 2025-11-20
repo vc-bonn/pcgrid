@@ -135,20 +135,20 @@ class Scales(Value):
 
 
 class Network(Value):
-    """A wrapper for a small MLP network that takes the output of the Grid as Input"""
+    """A wrapper for network values"""
 
     def __init__(self, args: dict):
         super().__init__(args)
-        if self.args["method"] not in ["direct", "sigmoid", "tanh"]:
+        if self.args["method"] not in ["direct", "tanh", "sigmoid"]:
             raise ValueError(f"Unsupported network method: {self.args['method']}")
 
     def forward(self, values) -> torch.Tensor:
-        """Forward pass to create network values."""
+        """Forward pass to create scale values."""
         if self.args["method"] == "direct":
-            return values
-        elif self.args["method"] == "sigmoid":
-            return torch.sigmoid(values)
-        elif self.args["method"] == "tanh":
-            return torch.tanh(values)
+            return values  # Directly use the provided values
+        if self.args["method"] == "tanh":
+            return torch.tanh(values)  # Directly use the provided values
+        if self.args["method"] == "sigmoid":
+            return torch.sigmoid(values)  # Directly use the provided values
         else:
-            raise ValueError(f"Unsupported network method: {self.args['method']}")
+            raise ValueError(f"Unsupported scale method: {self.args['method']}")

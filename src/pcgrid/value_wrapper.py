@@ -87,8 +87,8 @@ class ValueWrapper(torch.nn.Module):
         #     data["points"].min() >= -1 and data["points"].max() <= 1
         # ), "Points must be in the range [-1, 1]."
         # assert (
-        #     data["grid_index"].shape[0] == data["points"].shape[0]
-        # ), "Grid index and points must have the same batch size."
+        #     data["points"].min() >= -1 and data["points"].max() <= 1
+        # ), "Points must be in the range [-1, 1]."
         return reduce(lambda a, b: a | b, [wrapper(data) for wrapper in self.wrappers])
 
 

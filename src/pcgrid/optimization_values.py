@@ -150,3 +150,17 @@ class Network(Value):
             return torch.sigmoid(values)  # Directly use the provided values
         else:
             raise ValueError(f"Unsupported scale method: {self.args['method']}")
+
+
+class SMPLX(Value):
+    """A wrapper for network values"""
+
+    def __init__(self, args: dict):
+        super().__init__(args)
+        if self.args["method"] not in ["direct"]:
+            raise ValueError(f"Unsupported network method: {self.args['method']}")
+
+    def forward(self, values) -> torch.Tensor:
+        """Forward pass to create scale values."""
+        if self.args["method"] == "direct":
+            return values  # Directly use the provided values

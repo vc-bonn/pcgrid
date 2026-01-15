@@ -131,7 +131,7 @@ class Grid_level(torch.nn.Module):
             self.opt_values = to_differential(self.M, opt_parameters)
         else:
             self.opt_values = opt_parameters
-            
+
         self.opt_values = torch.nn.Parameter(self.opt_values)
         self.opt_values.requires_grad_()
 

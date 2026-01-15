@@ -144,6 +144,8 @@ class SupportWrapper(torch.nn.Module):
             return Scales(parameter_args)
         elif key == "Network":
             return Network(parameter_args)
+        elif key == "SMPLX":
+            return SMPLX(parameter_args)
         else:
             raise ValueError(f"Unsupported value type: {key}")
 

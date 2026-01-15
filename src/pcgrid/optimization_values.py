@@ -60,7 +60,7 @@ class Rotation(Value):
 
     def __init__(self, args: dict):
         super().__init__(args)
-        if self.args["method"] not in ["cayley", "default"]:
+        if self.args["method"] not in ["cayley", "default", "direct"]:
             raise ValueError(f"Unsupported rotation method: {self.args['method']}")
         if self.args["method"] == "default":
             self.rotation = torch.eye(4, device=self.device, dtype=torch.float32)[
@@ -88,6 +88,8 @@ class Rotation(Value):
             return self.cayley(values)
         elif self.args["method"] == "default":
             return self.rotation.repeat(values.shape[0], values.shape[1], 1, 1)
+        elif self.args["method"] == "direct":
+            return values
 
 
 class Opacity(Value):

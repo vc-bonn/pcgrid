@@ -357,16 +357,6 @@ class Grid_level(torch.nn.Module):
             align_corners=True,
         ).squeeze(dim=(-3, -2))
 
-        # Debug
-        # pos = (((data["points"] + 1) / 2) * self.grid_size).long()
-        # pos = pos[0].flatten(end_dim=-2).unique(dim=0)
-        # print("Unique positions:", pos.shape)
-        # print(
-        #     "Grid Coverage: {:.2f}%".format(
-        #         (pos.shape[0] * 100)
-        #         / (self.grid_size * self.grid_size * self.grid_size)
-        #     )
-        # )
         return values.permute(0, 2, 1)  # T, P, C
 
     def zero_grad(self):

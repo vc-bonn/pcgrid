@@ -72,12 +72,15 @@ class MultiresolutionGrid(torch.nn.Module):
             arg["lr"] = lr
         return args
 
-    def forward(self, data: dict):
+    def forward(self, data: dict, limit: int | None = None) -> torch.Tensor:
+        if limit is not None and limit > len(self.grids):
+            limit = len(self.grids)
+        grids = self.grids[:limit] if limit is not None else self.grids
         if len(data) > 0:
-            output = torch.stack([grid.forward(data) for grid in self.grids])
+            output = torch.stack([grid.forward(data) for grid in grids])
             return output.mean(dim=0)
         else:
-            return 0
+            raise Exception("No data provided to sample the grid.")
 
 
 class Split_Grid_Level(torch.nn.Module):

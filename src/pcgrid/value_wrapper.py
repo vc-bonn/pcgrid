@@ -80,7 +80,7 @@ class ValueWrapper(torch.nn.Module):
         for wrapper in self.wrappers:
             wrapper.step()
 
-    def forward(self, data: dict) -> torch.Tensor:
+    def forward(self, data: dict, limit=None) -> torch.Tensor:
         """Combines the outputs of all wrappers into a single dictionary."""
         validate_dict(data, self.input_keys)
         # assert (
@@ -89,7 +89,10 @@ class ValueWrapper(torch.nn.Module):
         # assert (
         #     data["points"].min() >= -1 and data["points"].max() <= 1
         # ), "Points must be in the range [-1, 1]."
-        return reduce(lambda a, b: a | b, [wrapper(data) for wrapper in self.wrappers])
+        return reduce(
+            lambda a, b: a | b,
+            [wrapper(data, limit=limit) for wrapper in self.wrappers],
+        )
 
 
 class SupportWrapper(torch.nn.Module):
@@ -184,9 +187,9 @@ class GridWrapper(SupportWrapper):
         padded_args["device"] = self.device
         return padded_args
 
-    def forward(self, data: dict) -> dict:
+    def forward(self, data: dict, limit: int | None, **kwargs) -> dict:
         """Returns the values of the parameterizations for the given data by sampling the preconditioned grid."""
-        values = self.grid(data)
+        values = self.grid(data, limit=limit)
         grid_values = 0
         output = {}
         for parameterization in self.parameterizations:
@@ -204,7 +207,7 @@ class DefaultWrapper(SupportWrapper):
         super().__init__(args)
         self.parameterization = self.get_parameterization(parameterization)
 
-    def forward(self, data: dict) -> dict:
+    def forward(self, data: dict, **kwargs) -> dict:
         values = torch.ones(
             data["grid_index"].shape[0], data["points"].shape[-2], device=self.device
         )
